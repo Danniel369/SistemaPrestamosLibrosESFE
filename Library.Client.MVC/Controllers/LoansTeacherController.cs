@@ -119,7 +119,7 @@ namespace Library.Client.MVC.Controllers
                 var currentBook = await booksBL.GetBooksByIdAsync(
                     new Books { BOOK_ID = pTeacher.ID_BOOK });
 
-                if (currentBook == null || currentBook.EXISTENCES <= 1)
+                if (currentBook == null || currentBook.EXISTENCES <= 0)
                 {
                     TempData["Alerta"] = "No hay suficientes ejemplares.";
                     await CargarViewBags(new Books { BOOK_ID = pTeacher.ID_BOOK });
@@ -131,6 +131,11 @@ namespace Library.Client.MVC.Controllers
 
                 if (newLoanId <= 0)
                     throw new Exception("No se pudo crear el prestamo.");
+
+
+                // 🔽 DESCONTAR STOCK
+                currentBook.EXISTENCES -= 1;
+                await booksBL.UpdateBooksAsync(currentBook);
 
                 TempData["Alerta"] = "Prestamo realizado correctamente.";
                 return RedirectToAction(nameof(Index));
@@ -234,6 +239,17 @@ namespace Library.Client.MVC.Controllers
 
                 // 🔴 ACTUALIZAR PRÉSTAMO DOCENTE
                 await teacherBL.UpdateLoansTeacherAsync(pLoan);
+
+                // 🔽 SI SE DEVUELVE, SUBIR STOCK
+                if (pLoan.STATUS == false)   // o == 0 si usas byte
+                {
+                    var libro = await booksBL.GetBooksByIdAsync(
+                        new Books { BOOK_ID = pLoan.ID_BOOK }
+                    );
+
+                    libro.EXISTENCES += 1;
+                    await booksBL.UpdateBooksAsync(libro);
+                }
 
                 TempData["Alerta"] = "El prestamo fue actualizado correctamente.";
                 return RedirectToAction(nameof(Index));

@@ -323,7 +323,7 @@ namespace Library.Client.MVC.Controllers
             if (fechaInicio >= fechaCierre)
                 ModelState.AddModelError("", "La fecha de inicio debe ser menor a la fecha de cierre.");
 
-           
+
             if (!ModelState.IsValid)
             {
                 ViewBag.LoanTypes = await loansTypesBL.GetAllLoanTypesAsync();
@@ -338,16 +338,33 @@ namespace Library.Client.MVC.Controllers
             pLoans.ID_RESERVATION = 1; // Activo
             pLoans.COPY = 1;
 
+            // 🔽 Reducir el stock
+            var libro = await booksBL.GetBooksByIdAsync(new Books { BOOK_ID = pLoans.ID_BOOK });
+
+            if (libro.EXISTENCES <= 1)
+            {
+                TempData["ErrorMessage"] = "No hay existencias disponibles para este libro.";
+                return RedirectToAction(nameof(Create));
+            }
+
+            Books2 actualizarLibro = new Books2
+            {
+                BOOK_ID = libro.BOOK_ID,
+                EXISTENCES = libro.EXISTENCES - 1
+            };
+
+            await booksBL.UpdateExistencesBooksAsync(actualizarLibro);
+
             // 1️⃣ Guardar préstamo
             await loansBL.CreateLoansAsync(pLoans);
 
-           
+
 
             // 2️⃣ Guardar fechas
             LoanDates loanDates = new LoanDates
             {
                 ID_LOAN = pLoans.LOAN_ID,
-                LOANSTEACHER_ID = pLoans.LOAN_ID, 
+                LOANSTEACHER_ID = pLoans.LOAN_ID,
                 START_DATE = fechaInicio.Value,
                 END_DATE = fechaCierre.Value,
                 STATUS = 1
