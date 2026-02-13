@@ -44,7 +44,7 @@ namespace Library.DataAccess.Persistence.Context
             //optionBuilder.UseSqlServer(@"Data Source= KATHY\KATHY; Initial Catalog=LIBRARY;Integrated Security=True; Trust Server Certificate=true");
             //optionBuilder.UseSqlServer(@"Data Source=AREVPC;Initial Catalog=LIBRARY;User ID=sa;Password=emmanuelle;Trust Server Certificate=true");
             //optionBuilder.UseSqlServer(@"Data Source=Marroquin55N\MSSQLSERVER01;Initial Catalog=LIBRARY;User ID=Norberto9;Password=1234;Trust Server Certificate=True");
-            optionBuilder.UseSqlServer(@"Data Source=USIEL;Initial Catalog=library6;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
+            optionBuilder.UseSqlServer(@"Data Source=DESKTOP-NFDMETJ;Initial Catalog=library6;Integrated Security=True;Encrypt=False");
 
             //optionBuilder.UseSqlServer(@"Data Source=THEDESTRUCTORGY\SQLEXPRESS;Initial Catalog=LIBRARY;User ID=sa;Password=rodrigo;Trust Server Certificate=true");
             //optionBuilder.UseSqlServer(@"Data Source=DESKTOP-JV2NN3U\SQLEXPRESS; Initial Catalog=LIBRARY;User ID=sa;Password=12345; Trust Server Certificate=true");

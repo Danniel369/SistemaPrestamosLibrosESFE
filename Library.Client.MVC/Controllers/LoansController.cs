@@ -87,14 +87,18 @@ namespace Library.Client.MVC.Controllers
         // GET: BooksController/Edit/5
         public async Task<IActionResult> Edit(long id)
         {
+            if (id <= 0)
+                return BadRequest("Id inválido.");
             var loans = await loansBL.GetLoansByIdAsync(new Loans { LOAN_ID = id });
+            if (loans == null)
+                return NotFound($"Préstamo con id {id} no encontrado.");
             ViewBag.LoanTypes = await loansTypesBL.GetAllLoanTypesAsync();
             ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
             ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(new LoanDates { ID_LOAN = id });
 
             var titulo = await booksBL.GetBooksByIdAsync(new Books { BOOK_ID = loans.ID_BOOK });
-            ViewBag.TituloB = titulo.TITLE;
-            ViewBag.Portada = titulo.COVER;
+            ViewBag.TituloB = titulo?.TITLE;
+            ViewBag.Portada = titulo?.COVER;
             ViewBag.Error = "";
             ViewBag.ShowMenu = true;
             return View(loans);

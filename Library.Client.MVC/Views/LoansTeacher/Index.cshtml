@@ -38,6 +38,11 @@
                 </a>
             </div> 
             <div class="spacer">
+                <button id="search-button" type="submit" class="btn btn-secondary">
+                    <i class="bi bi-reply-fill"></i> Buscar
+                </button>
+            </div>
+            <div class="spacer">
                 <select name="ID_TYPE" class="form-control">
                     <option value="0">Tipo de Préstamo</option>
                     @foreach (var t in loanTypes)
@@ -56,6 +61,9 @@
                     }
                 </select>
             </div>
+            <a asp-action="ExportarExcel" class="btn btn-success" style="background-color: #1E7940;">
+                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+            </a>
            
         </form>
 

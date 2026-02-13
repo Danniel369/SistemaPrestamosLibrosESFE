@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Library.DataAccess.Domain;
+﻿using ClosedXML.Excel;
 using Library.BusinessRules;
 using Library.Client.MVC.services;
-
+using Library.DataAccess.Domain;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NPOI.SS.UserModel;
 // Alias para evitar conflictos
 using TeacherDomain = Library.DataAccess.Domain.LoansTeacher;
 
@@ -28,10 +29,22 @@ namespace Library.Client.MVC.Controllers
         // =====================================================
         // INDEX
         // =====================================================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int ID_TYPE = 0, int ID_RESERVATION = 0)
         {
             // 🔹 Préstamos con includes
             var teacherList = await teacherBL.GetIncludePropertiesAsync(null);
+            // 2. Aplicar filtros de búsqueda
+            if (ID_TYPE > 0)
+            {
+                teacherList = teacherList.Where(x => x.ID_TYPE == ID_TYPE).ToList();
+            }
+
+            if (ID_RESERVATION > 0)
+            {
+                teacherList = teacherList.Where(x => x.ID_RESERVATION == ID_RESERVATION).ToList();
+            }
+
+            // 🔹 Lógica de fechas (Se mantiene igual)
 
             // 🔹 Fechas de préstamo
             var loanDates = await loanDatesBL.GetAllLoanDatesAsync();
@@ -56,6 +69,8 @@ namespace Library.Client.MVC.Controllers
             ViewBag.LoansTypes = await loansTypesBL.GetAllLoanTypesAsync();
             ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
             ViewBag.ShowMenu = true;
+            ViewBag.SelectedType = ID_TYPE;
+            ViewBag.SelectedReservation = ID_RESERVATION;
 
             return View("~/Views/LoansTeacher/Index.cshtml", teacherList);
         }
@@ -145,6 +160,67 @@ namespace Library.Client.MVC.Controllers
                 ViewBag.Error = "Error: " + ex.Message;
                 await CargarViewBags(new Books { BOOK_ID = pTeacher.ID_BOOK });
                 return View(pTeacher);
+            }
+        }
+        // =====================================================
+        // Exportación en Excel
+        // =====================================================
+        public async Task<IActionResult> ExportarExcel()
+        {
+            // 1. Obtenemos la lista con todas las propiedades relacionadas (Includes)
+            // Tal como lo haces en el Index
+            var teacherList = await teacherBL.GetIncludePropertiesAsync(null);
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Préstamos Docentes");
+
+                // 2. Encabezados (Basados en tu tabla de la imagen)
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Tipo";
+                worksheet.Cell(1, 3).Value = "Estado";
+                worksheet.Cell(1, 4).Value = "Correo";
+                worksheet.Cell(1, 5).Value = "Nombre";
+                worksheet.Cell(1, 6).Value = "Rol";
+                worksheet.Cell(1, 7).Value = "Libro";
+                worksheet.Cell(1, 8).Value = "Status";
+
+                // Estilo para el encabezado (Color verde de tu diseño)
+                var headerRange = worksheet.Range("A1:H1");
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1E7940");
+                headerRange.Style.Font.FontColor = XLColor.White;
+                headerRange.Style.Font.Bold = true;
+
+                // 3. Llenado de datos
+                int row = 2;
+                foreach (var item in teacherList.Where(x => x.STATUS)) // Solo activos
+                {
+                    worksheet.Cell(row, 1).Value = item.LOANSTEACHER_ID;
+                    worksheet.Cell(row, 2).Value = item.LoanTypes?.TYPES_NAME ?? "N/A";
+                    worksheet.Cell(row, 3).Value = item.ReservationStatus?.STATUS_NAME ?? "N/A";
+                    worksheet.Cell(row, 4).Value = item.EMAIL ?? "No disponible";
+                    worksheet.Cell(row, 5).Value = item.PERSONALNAME ?? "No disponible";
+                    worksheet.Cell(row, 6).Value = item.ROL ?? "No asignado";
+                    worksheet.Cell(row, 7).Value = item.Books?.TITLE ?? "Sin título";
+                    worksheet.Cell(row, 8).Value = "ACTIVO";
+                    row++;
+                }
+
+                // Ajuste automático de columnas
+                worksheet.Columns().AdjustToContents();
+
+                // 4. Generación del archivo para descarga
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+
+                    return File(
+                        content,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        $"Reporte_Prestamos_Docentes_{DateTime.Now:ddMMyyyy}.xlsx"
+                    );
+                }
             }
         }
 
