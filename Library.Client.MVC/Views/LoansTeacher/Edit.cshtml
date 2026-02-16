@@ -1,10 +1,14 @@
 ﻿@model Library.DataAccess.Domain.LoansTeacher
+@using Library.DataAccess.Domain
 @{
     ViewData["Title"] = "Editar Préstamo Docente";
 
-    var loanTypes = ViewBag.LoanTypes as IEnumerable<Library.DataAccess.Domain.LoanTypes> ?? new List<Library.DataAccess.Domain.LoanTypes>();
-    var reservationStatus = ViewBag.ReservationStatus as IEnumerable<Library.DataAccess.Domain.ReservationStatus> ?? new List<Library.DataAccess.Domain.ReservationStatus>();
-    var loanDates = ViewBag.LoanDates as IEnumerable<Library.DataAccess.Domain.LoanDates> ?? new List<Library.DataAccess.Domain.LoanDates>();
+    var loanTypes = ViewBag.LoanTypes as IEnumerable<LoanTypes> ?? new List<LoanTypes>();
+    var reservationStatus = ViewBag.ReservationStatus as IEnumerable<ReservationStatus> ?? new List<ReservationStatus>();
+
+    // 🔴 ESTE ES EL CAMBIO CLAVE: Usar LoanDates2 y List
+    var loanDates = ViewBag.LoanDates as List<LoanDates2> ?? new List<LoanDates2>();
+
     string portada = ViewBag.Portada as string;
 }
 

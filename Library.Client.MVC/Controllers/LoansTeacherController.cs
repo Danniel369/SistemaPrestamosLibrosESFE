@@ -255,9 +255,11 @@ namespace Library.Client.MVC.Controllers
 
             ViewBag.LoanTypes = await loansTypesBL.GetAllLoanTypesAsync();
             ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
-            ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(
-                new LoanDates { ID_LOAN = id }
-            );
+            ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(new LoanDates
+            {
+                ID_LOAN = id,
+                LOANSTEACHER_ID = id
+            });
 
             var libro = await booksBL.GetBooksByIdAsync(
                 new Books { BOOK_ID = loanTeacher.ID_BOOK }
@@ -314,8 +316,8 @@ namespace Library.Client.MVC.Controllers
                         }
                     }
 
-                    // 🔴 GUARDAR FECHAS
                     pLoanDates.ID_LOAN = id;
+                    pLoanDates.LOANSTEACHER_ID = id;
                     pLoanDates.START_DATE = fechaInicio.Value;
                     pLoanDates.END_DATE = fechaCierre.Value;
                     pLoanDates.STATUS = 1;
@@ -348,9 +350,12 @@ namespace Library.Client.MVC.Controllers
                 ViewBag.LoanTypes = await loansTypesBL.GetAllLoanTypesAsync();
                 ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
                 ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(
-                    new LoanDates { ID_LOAN = id }
+                    new LoanDates
+                    {
+                        ID_LOAN = id,
+                        LOANSTEACHER_ID = id
+                    }
                 );
-
                 var libro = await booksBL.GetBooksByIdAsync(
                     new Books { BOOK_ID = pLoan.ID_BOOK }
                 );
