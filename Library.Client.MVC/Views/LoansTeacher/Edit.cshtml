@@ -2,9 +2,9 @@
 @{
     ViewData["Title"] = "Editar Préstamo Docente";
 
-    var loanTypes = ViewBag.LoanTypes as List<Library.DataAccess.Domain.LoanTypes> ?? new();
-    var reservationStatus = ViewBag.ReservationStatus as List<Library.DataAccess.Domain.ReservationStatus> ?? new();
-    var loanDates = ViewBag.LoanDates as List<Library.DataAccess.Domain.LoanDates> ?? new();
+    var loanTypes = ViewBag.LoanTypes as IEnumerable<Library.DataAccess.Domain.LoanTypes> ?? new List<Library.DataAccess.Domain.LoanTypes>();
+    var reservationStatus = ViewBag.ReservationStatus as IEnumerable<Library.DataAccess.Domain.ReservationStatus> ?? new List<Library.DataAccess.Domain.ReservationStatus>();
+    var loanDates = ViewBag.LoanDates as IEnumerable<Library.DataAccess.Domain.LoanDates> ?? new List<Library.DataAccess.Domain.LoanDates>();
     string portada = ViewBag.Portada as string;
 }
 

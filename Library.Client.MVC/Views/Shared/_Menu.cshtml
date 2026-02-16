@@ -104,6 +104,20 @@
                 <span class="menu-title">Préstamos de Estudiantes</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-toggle="collapse" href="#submenu-prestamo" aria-expanded="false">
+                <span class="menu-title">Gestión de Préstamo</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="submenu-prestamo">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionTipoLoan">Tipo de Préstamo</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionEsLoan">Estado del Préstamo</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionLDelite">Prestamos Eliminados</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="#" id="redirectionRLoans">Exportar Prestamos Estudiantes</a></li>
+                </ul>
+            </div>
+        </li>
 
         <li class="nav-item">
             <a class="nav-link" asp-controller="LoansTeacher" asp-action="Index">
@@ -121,21 +135,6 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Personal" asp-action="Index">Crear Personal</a>
                     </li>
-                </ul>
-            </div>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link collapsed" data-toggle="collapse" href="#submenu-prestamo" aria-expanded="false">
-                <span class="menu-title">Gestión de Préstamo</span>
-                <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="submenu-prestamo">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionTipoLoan">Tipo de Préstamo</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionEsLoan">Estado del Préstamo</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="#" id="redireccionLDelite">Prestamos Eliminados</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="#" id="redirectionRLoans">Exportar Prestamos Estudiantes</a></li>
                 </ul>
             </div>
         </li>

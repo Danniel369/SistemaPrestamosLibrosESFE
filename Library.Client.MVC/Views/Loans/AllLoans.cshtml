@@ -97,15 +97,78 @@
             opacity: 1;
         }
 </style>
-
-<div class="card" id="contenedor-principal">
-    <div class="card-body">
-        <h1 style="font-family: 'Poppins', sans-serif; font-weight: 600;">Registro de Préstamos</h1>
-        <div class="spacer">
-            <button type="button" id="btnExportarExcel" class="btn btn-success" style="background-color: #1E7940;">
-                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-            </button>
-        </div>
+<h1 style="font-family: 'Poppins', sans-serif; font-weight: 600;">Registro de Préstamos</h1>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+    <button type="button" id="btnExportarExcel" class="btn btn-success" style="background-color: #1E7940; border: none; height: 38px; border-radius: 5px;">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+    </button>
+    <button type="button" id="btnEjecutarBusqueda" class="btn btn-secondary" style="background-color: #6c757d; border: none; height: 38px; border-radius: 5px; padding: 0 20px;">
+        Buscar
+    </button>
+    <div style="min-width: 250px;">
+        <input type="text" id="filtroNombre" class="form-control" placeholder="Nombre del estudiante..." style="height: 38px; border-radius: 5px; border: 1px solid #dee2e6;">
+    </div>
+    <div style="min-width: 200px;">
+        <select id="filtroTipo" class="form-select" style="height: 38px; border-radius: 5px; border: 1px solid #dee2e6;">
+            <option value="">Tipo de Préstamo</option>
+            @foreach (var tipo in Model.Select(m => m.LoanTypes?.TYPES_NAME).Distinct().Where(t => t != null))
+            {
+                <option value="@tipo">@tipo</option>
+            }
+        </select>
+    </div>
+    <button type="button" id="btnLimpiar" class="btn btn-outline-light border" style="height: 38px; border-radius: 5px; color: #6c757d;" title="Limpiar Filtros">
+        <i class="bi bi-arrow-counterclockwise"></i>Limpiar
+    </button>
+</div>
+<hr />
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnBuscar = document.getElementById('btnEjecutarBusqueda');
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const inputNombre = document.getElementById('filtroNombre');
+        const selectTipo = document.getElementById('filtroTipo');
+        // Función que realiza el filtrado real
+        function filtrarTabla() {
+            const queryNombre = inputNombre.value.toLowerCase().trim();
+            const queryTipo = selectTipo.value.toLowerCase();
+            const filas = document.querySelectorAll('#customers tbody tr');
+            filas.forEach(fila => {
+                // Seleccionamos la celda del nombre por su clase parcial
+                const celdaNombre = fila.querySelector('td[class*="tdStudentName_"]');
+                const textoNombre = celdaNombre ? celdaNombre.textContent.toLowerCase() : "";
+                // El tipo de préstamo está en la segunda columna (índice 1)
+                const textoTipo = fila.cells[1].textContent.toLowerCase();
+                const coincideNombre = textoNombre.includes(queryNombre);
+                const coincideTipo = queryTipo === "" || textoTipo === queryTipo;
+                // Mostrar u ocultar fila
+                if (coincideNombre && coincideTipo) {
+                    fila.style.display = "";
+                } else {
+                    fila.style.display = "none";
+                }
+            });
+        }
+        // Ejecutar al hacer clic en Buscar
+        btnBuscar.addEventListener('click', function() {
+            filtrarTabla();
+        });
+        // Ejecutar si el usuario presiona "Enter" dentro del input
+        inputNombre.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                filtrarTabla();
+            }
+        });
+        // Restablecer la tabla y los campos
+        btnLimpiar.addEventListener('click', function() {
+            inputNombre.value = "";
+            selectTipo.value = "";
+            // Volver a mostrar todas las filas
+            const filas = document.querySelectorAll('#customers tbody tr');
+            filas.forEach(f => f.style.display = "");
+        });
+    });
+</script>
         <hr />
         <div class="table-responsive fade-page show" id="tableContainer">
             <table id="customers" class="table">
@@ -232,4 +295,3 @@
         });
     });
 </script>
-

@@ -142,13 +142,23 @@ namespace Library.Client.MVC.Controllers
                 }
 
                 // Guardar préstamo
+                // 1. Guardar el registro principal del préstamo
                 long newLoanId = await teacherBL.CreateTeacherAsync(pTeacher);
 
                 if (newLoanId <= 0)
                     throw new Exception("No se pudo crear el prestamo.");
 
+                // 🌟 2. GUARDAR LA FECHA INICIAL (Esto es lo que falta)
+                // Usamos los parámetros fechaInicio y fechaCierre que recibe el método Create
+                await loanDatesBL.CreateLoanDatesAsync(new LoanDates
+                {
+                    ID_LOAN = newLoanId,
+                    START_DATE = fechaInicio.Value,
+                    END_DATE = fechaCierre.Value,
+                    STATUS = 1
+                });
 
-                // 🔽 DESCONTAR STOCK
+                // 3. 🔽 DESCONTAR STOCK
                 currentBook.EXISTENCES -= 1;
                 await booksBL.UpdateBooksAsync(currentBook);
 
@@ -351,14 +361,5 @@ namespace Library.Client.MVC.Controllers
                 return View(pLoan);
             }
         }
-
-
-
-
-
-
-
-
-
     }
 }
