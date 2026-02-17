@@ -15,7 +15,7 @@ namespace Library.Client.MVC.Controllers
         BLCategories categoriesBL = new BLCategories();
         BLCatalogs catalogsBL = new BLCatalogs();
 
-        public async Task<IActionResult> Index(Editorials pEditorials = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(Editorials pEditorials = null, int page = 1, int pageSize = 5)
         {
             if (pEditorials == null)
                 pEditorials = new Editorials();

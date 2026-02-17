@@ -56,7 +56,7 @@
     .spacer {
         margin-right: 0 !important;
         margin-bottom: 10px !important;
-    }
+    }  
 
     #btn-create {
         width: 100% !important;
@@ -124,6 +124,19 @@
     #suggestionsContainer .suggestion-item:hover {
         background-color: #f0f0f0;
     }
+    /* Estilo personalizado para el botón Limpiar */
+    .btn-limpiar {
+        transition: all 0.3s ease; /* Para que el cambio de color sea suave */
+        border-color: #6c757d;
+        color: #6c757d;
+    }
+
+        .btn-limpiar:hover {
+            background-color: #6c757d !important; /* Gris intermedio */
+            color: white !important;
+            opacity: 0.8; /* Esto le da el toque "opaco" */
+            border-color: #6c757d;
+        }
 </style>
 <div class="card" id="contenedor-principal">
     <div class="card-body">
@@ -166,6 +179,13 @@
                         <button id="search-button" type="submit" class="btn btn-secondary">
                             <i class="bi bi-reply-fill"></i> Buscar
                         </button>
+                        <a asp-action="Index" class="btn btn-outline-dark btn-limpiar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle me-1" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                            </svg>
+                            Limpiar
+                        </a>
                     </div>
                 </form>
             </div>
