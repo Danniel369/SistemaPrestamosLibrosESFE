@@ -13,7 +13,7 @@ namespace Library.Client.MVC.Controllers
         BLCountries countriesBL = new BLCountries();
 
         // GET: AcquisitionTypesController
-        public async Task<IActionResult> Index(string COUNTRY_NAME, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(string COUNTRY_NAME, int page = 1, int pageSize = 5)
         {
             var filtro = new Countries
             {

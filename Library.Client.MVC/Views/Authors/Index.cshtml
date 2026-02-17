@@ -1,11 +1,16 @@
 ﻿@model IEnumerable<Library.DataAccess.Domain.Authors>
 @{
     ViewData["Title"] = "Autores";
-    int numPage = 1;
-    int numRegistros = 0;
-    int numRegistrosPorPage = 10;
-    int[] tops = { 10, 20, 50, 100, 500, 1000, 10000, -1 };
-    int topActual = Convert.ToInt32(ViewBag.Top);
+    // Si ViewBag.Top es nulo (primera carga), forzamos que sea 5
+    int topActual = ViewBag.Top != null ? Convert.ToInt32(ViewBag.Top) : 5;
+    List<int> listaTops = new List<int>();
+    // 1. De 5 en 5 hasta 100
+    for (int i = 5; i <= 100; i += 5)
+    {
+        listaTops.Add(i);
+    }
+    listaTops.Add(-1);
+    int[] tops = listaTops.ToArray();
 }
 <style>
     body {
@@ -140,7 +145,7 @@
                         <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
                     </svg>
-                    <i class="bi bi-plus-square"></i> Crear Nuevo
+                    Crear Nuevo
                 </a>
             </div>
             <div class="col">
@@ -151,18 +156,20 @@
                                class="form-control"
                                name="AUTHOR_NAME"
                                id="authorNameInput"
-                               autocomplete="off"/>
+                               value="@Context.Request.Query["AUTHOR_NAME"]"
+                               autocomplete="off" />
                         <div id="suggestionsContainer"
                              style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; display: none; z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
                     </div>
                     <div class="spacer d-flex align-items-center">
-                        <label class="control-label me-2">Top</label>
-                        <select name="top_aux" class="form-control">
+                        <label class="control-label me-2">Mostrar</label>
+                        @* Cambio de name="top_aux" a "pageSize" para consistencia *@
+                        <select name="pageSize" class="form-control" onchange="this.form.submit()">
                             @foreach (var item in tops)
                             {
                                 string strItem = item != -1 ? item.ToString() : "Todos";
-                                string selected = item == topActual ? "selected" : "";
-                                <option value="@item" selected="@selected">@strItem</option>
+                                int val = item == -1 ? 10000 : item;
+                                <option value="@val" selected="@(topActual == val ? "selected" : null)">@strItem</option>
                             }
                         </select>
                     </div>
@@ -171,7 +178,8 @@
                             <i class="bi bi-reply-fill"></i> Buscar
                         </button>
                     </div>
-                    <input type="hidden" name="page" value="@ViewBag.PaginaActual" />
+                    @* Al buscar o cambiar el top, siempre volvemos a la página 1 *@
+                    <input type="hidden" name="page" value="1" />
                 </form>
             </div>
         </div>
@@ -214,17 +222,41 @@
         @if (ViewBag.TotalPaginas > 1)
         {
             <nav class="pagination-container">
+                @* Botón Primera *@
                 @if (ViewBag.PaginaActual > 1)
                 {
-                    <a class="page-btn" asp-action="Index" asp-route-page="@(ViewBag.PaginaActual - 1)" asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]" asp-route-top_aux="@Context.Request.Query["top_aux"]">Anterior</a>
+                    <a class="page-btn" asp-action="Index" asp-route-page="1"
+                       asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]"
+                       asp-route-pageSize="@topActual">«</a>
                 }
-                @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+
+                @* LÓGICA PARA MOSTRAR SOLO 5 PÁGINAS *@
+                @{
+                    int maxPaginasAMostrar = 5;
+                    int inicial = Math.Max(1, ViewBag.PaginaActual - 2);
+                    int final = Math.Min(ViewBag.TotalPaginas, inicial + maxPaginasAMostrar - 1);
+
+                    // Ajuste en caso de estar cerca del final para que siempre sigan siendo 5 si es posible
+                    if (final - inicial + 1 < maxPaginasAMostrar)
+                    {
+                        inicial = Math.Max(1, final - maxPaginasAMostrar + 1);
+                    }
+                }
+
+                @for (int i = inicial; i <= final; i++)
                 {
-                    <a class="page-btn @(i == ViewBag.PaginaActual ? "active" : "")" asp-action="Index" asp-route-page="@i" asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]" asp-route-top_aux="@Context.Request.Query["top_aux"]">@i</a>
+                    <a class="page-btn @(i == ViewBag.PaginaActual ? "active" : "")"
+                       asp-action="Index" asp-route-page="@i"
+                       asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]"
+                       asp-route-pageSize="@topActual">@i</a>
                 }
+
+                @* Botón Última *@
                 @if (ViewBag.PaginaActual < ViewBag.TotalPaginas)
                 {
-                    <a class="page-btn" asp-action="Index" asp-route-page="@(ViewBag.PaginaActual + 1)" asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]" asp-route-top_aux="@Context.Request.Query["top_aux"]">Siguiente</a>
+                    <a class="page-btn" asp-action="Index" asp-route-page="@ViewBag.TotalPaginas"
+                       asp-route-AUTHOR_NAME="@Context.Request.Query["AUTHOR_NAME"]"
+                       asp-route-pageSize="@topActual">»</a>
                 }
             </nav>
         }

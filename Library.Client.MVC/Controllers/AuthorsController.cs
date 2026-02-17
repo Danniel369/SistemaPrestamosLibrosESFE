@@ -13,7 +13,7 @@ namespace Library.Client.MVC.Controllers
         BLAuthors authorsBL = new BLAuthors();
 
         // GET: CategoriesController
-        public async Task<IActionResult> Index(Authors pAuthors = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(Authors pAuthors = null, int page = 1, int pageSize = 5)
         {
             if (pAuthors == null)
                 pAuthors = new Authors();
