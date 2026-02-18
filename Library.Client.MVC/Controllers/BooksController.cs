@@ -21,7 +21,7 @@ namespace Library.Client.MVC.Controllers
         BLCountries countriesBL = new BLCountries();
         BLCatalogs catalogsBL = new BLCatalogs();
 
-        public async Task<IActionResult> Index(Books pBooks, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(Books pBooks, int page = 1, int pageSize = 5)
         {
             if (pBooks == null)
                 pBooks = new Books();
