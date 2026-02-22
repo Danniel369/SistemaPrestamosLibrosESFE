@@ -148,11 +148,25 @@ namespace Library.DataAccess.Repositories
             {
                 using (var dbContext = new DBContext())
                 {
-
-                    loanDates = await dbContext.Loan_Dates.Where(s => s.ID_LOAN == pLoanDates.ID_LOAN)
-                        .Include(x=>x.Loans)
-                        .Select(x => new LoanDates2 {ID_LOAN = x.ID_LOAN, START_DATE = x.START_DATE, END_DATE = x.END_DATE})
+                    if (pLoanDates.ID_LOAN == 0 && pLoanDates.LOANSTEACHER_ID > 0)
+                    {
+                        loanDates = await dbContext.Loan_Dates.Where(s => s.ID_LOAN == pLoanDates.LOANSTEACHER_ID && s.LOANSTEACHER_ID == pLoanDates.LOANSTEACHER_ID)
+                        .Include(x => x.Loans)
+                        .Select(x => new LoanDates2 { ID_LOAN = x.ID_LOAN, START_DATE = x.START_DATE, END_DATE = x.END_DATE })
                         .ToListAsync();
+
+                    }
+                    else {
+                        loanDates = await dbContext.Loan_Dates.Where(s => s.ID_LOAN == pLoanDates.ID_LOAN && s.LOANSTEACHER_ID == null)
+                        .Include(x => x.Loans)
+                        .Select(x => new LoanDates2 { ID_LOAN = x.ID_LOAN, START_DATE = x.START_DATE, END_DATE = x.END_DATE })
+                        .ToListAsync();
+                    }
+
+                    //loanDates = await dbContext.Loan_Dates.Where(s => s.ID_LOAN == pLoanDates.ID_LOAN)
+                    //    .Include(x=>x.Loans)
+                    //    .Select(x => new LoanDates2 {ID_LOAN = x.ID_LOAN, START_DATE = x.START_DATE, END_DATE = x.END_DATE})
+                    //    .ToListAsync();
                 }
             }
             catch (Exception e)

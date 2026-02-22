@@ -153,6 +153,7 @@ namespace Library.Client.MVC.Controllers
                 await loanDatesBL.CreateLoanDatesAsync(new LoanDates
                 {
                     ID_LOAN = newLoanId,
+                    LOANSTEACHER_ID = newLoanId,
                     START_DATE = fechaInicio.Value,
                     END_DATE = fechaCierre.Value,
                     STATUS = 1
@@ -244,7 +245,6 @@ namespace Library.Client.MVC.Controllers
             ViewBag.Books = await booksBL.GetIncludePropertiesAsync(pBooks);
             ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
         }
-
         // GET: LoansTeacher/Edit/5
         public async Task<IActionResult> Edit(long id)
         {
@@ -257,7 +257,7 @@ namespace Library.Client.MVC.Controllers
             ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
             ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(new LoanDates
             {
-                ID_LOAN = id,
+                //ID_LOAN = id,
                 LOANSTEACHER_ID = id
             });
 
@@ -272,27 +272,20 @@ namespace Library.Client.MVC.Controllers
 
             return View(loanTeacher);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-    long id,
-    LoansTeacher pLoan,
-    DateTime? fechaInicio,
-    DateTime? fechaCierre,
-    LoanDates pLoanDates
-)
+        public async Task<IActionResult> Edit(long id, LoansTeacher pLoan, DateTime? fechaInicio, DateTime? fechaCierre, LoanDates pLoanDates)
         {
             try
             {
-                // 🔴 VALIDACIÓN DE FECHAS INCOMPLETAS
+                // 1. VALIDACIÓN DE FECHAS INCOMPLETAS
                 if (fechaInicio.HasValue != fechaCierre.HasValue)
                 {
                     TempData["ErrorMessage"] = "Debes asignar ambas fechas.";
                     return RedirectToAction(nameof(Edit), new { id });
                 }
 
-                // 🔴 VALIDAR FECHAS
+                // 2. LÓGICA DE FECHAS (Aquí evitamos los duplicados)
                 if (fechaInicio.HasValue && fechaCierre.HasValue)
                 {
                     if (fechaInicio.Value.Date >= fechaCierre.Value.Date)
@@ -301,42 +294,51 @@ namespace Library.Client.MVC.Controllers
                         return RedirectToAction(nameof(Edit), new { id });
                     }
 
-                    var existingDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(
-                        new LoanDates { ID_LOAN = id }
-                    );
+                    // Traer fechas actuales para comparar
+                    var existingDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(new LoanDates { ID_LOAN = id });
 
-                    if (existingDates.Any())
+                    // 🛡️ NOVEDAD: Solo insertar si los valores han cambiado realmente
+                    bool yaExisteEsaFecha = existingDates.Any(d =>
+                        d.START_DATE.Date == fechaInicio.Value.Date &&
+                        d.END_DATE.Date == fechaCierre.Value.Date);
+
+                    if (!yaExisteEsaFecha)
                     {
-                        var maxEndDate = existingDates.Max(d => d.END_DATE);
-                        if (fechaCierre.Value.Date <= maxEndDate.Date)
+                        // Si vas a insertar una nueva (extensión), validar que sea mayor a la anterior
+                        if (existingDates.Any())
                         {
-                            TempData["ErrorMessage"] =
-                                $"La fecha cierre debe ser mayor a {maxEndDate:dd/MM/yyyy}";
-                            return RedirectToAction(nameof(Edit), new { id });
+                            var maxEndDate = existingDates.Max(d => d.END_DATE);
+                            if (fechaCierre.Value.Date <= maxEndDate.Date)
+                            {
+                                TempData["ErrorMessage"] = $"La nueva fecha cierre debe ser mayor a la anterior: {maxEndDate:dd/MM/yyyy}";
+                                return RedirectToAction(nameof(Edit), new { id });
+                            }
                         }
+
+                        pLoanDates.ID_LOAN = id;
+                        pLoanDates.LOANSTEACHER_ID = id;
+                        pLoanDates.START_DATE = fechaInicio.Value;
+                        pLoanDates.END_DATE = fechaCierre.Value;
+                        pLoanDates.STATUS = 1;
+
+                        await loanDatesBL.CreateLoanDatesAsync(pLoanDates);
                     }
-
-                    pLoanDates.ID_LOAN = id;
-                    pLoanDates.LOANSTEACHER_ID = id;
-                    pLoanDates.START_DATE = fechaInicio.Value;
-                    pLoanDates.END_DATE = fechaCierre.Value;
-                    pLoanDates.STATUS = 1;
-
-                    await loanDatesBL.CreateLoanDatesAsync(pLoanDates);
                 }
 
-                // 🔴 ACTUALIZAR PRÉSTAMO DOCENTE
+                // 3. ACTUALIZAR PRÉSTAMO DOCENTE
                 await teacherBL.UpdateLoansTeacherAsync(pLoan);
 
-                // 🔽 SI SE DEVUELVE, SUBIR STOCK
-                if (pLoan.STATUS == false)   // o == 0 si usas byte
+                // 4. GESTIÓN DE STOCK (Mejorado para evitar sumar stock infinitamente)
+                // Solo sumamos stock si el préstamo pasa de STATUS=true a STATUS=false
+                var prestamoAntesDeGuardar = await teacherBL.GetLoanTeacherByIdAsync(id);
+                if (prestamoAntesDeGuardar.STATUS == true && pLoan.STATUS == false)
                 {
-                    var libro = await booksBL.GetBooksByIdAsync(
-                        new Books { BOOK_ID = pLoan.ID_BOOK }
-                    );
-
-                    libro.EXISTENCES += 1;
-                    await booksBL.UpdateBooksAsync(libro);
+                    var libro = await booksBL.GetBooksByIdAsync(new Books { BOOK_ID = pLoan.ID_BOOK });
+                    if (libro != null)
+                    {
+                        libro.EXISTENCES += 1;
+                        await booksBL.UpdateBooksAsync(libro);
+                    }
                 }
 
                 TempData["Alerta"] = "El prestamo fue actualizado correctamente.";
@@ -344,27 +346,67 @@ namespace Library.Client.MVC.Controllers
             }
             catch (Exception ex)
             {
+                // El bloque Catch se mantiene igual para repoblar la vista
                 ViewBag.Error = ex.Message;
                 ViewBag.ShowMenu = true;
-
                 ViewBag.LoanTypes = await loansTypesBL.GetAllLoanTypesAsync();
                 ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
-                ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(
-                    new LoanDates
-                    {
-                        ID_LOAN = id,
-                        LOANSTEACHER_ID = id
-                    }
-                );
-                var libro = await booksBL.GetBooksByIdAsync(
-                    new Books { BOOK_ID = pLoan.ID_BOOK }
-                );
-
+                ViewBag.LoanDates = await loanDatesBL.GetLoanDatesByIdLoanAsync(new LoanDates { ID_LOAN = id });
+                var libro = await booksBL.GetBooksByIdAsync(new Books { BOOK_ID = pLoan.ID_BOOK });
                 ViewBag.TituloB = libro?.TITLE;
                 ViewBag.Portada = libro?.COVER;
-
                 return View(pLoan);
             }
+        }
+        public async Task<IActionResult> LoansDelete(string personalName = "", int page = 1, int pageSize =10)
+        {
+            // 1. Instanciamos el objeto para los includes
+            var pLoans = new TeacherDomain();
+
+            // 2. Obtener los préstamos con sus propiedades de navegación
+            var loans = await teacherBL.GetIncludePropertiesAsync(pLoans);
+
+            // 3. Filtrar solo los eliminados (STATUS == false)
+            // Usamos .AsEnumerable() o .ToList() antes del filtro si GetIncludePropertiesAsync devuelve IQueryable
+            var loansFiltrados = loans
+                .Where(l => l.STATUS == false)
+                .OrderByDescending(l => l.LOANSTEACHER_ID) // Los más recientes primero suele ser mejor
+                .ToList();
+
+            // 4. Aplicar filtro de búsqueda por nombre
+            if (!string.IsNullOrEmpty(personalName))
+            {
+                loansFiltrados = loansFiltrados
+                    .Where(l => l.PERSONALNAME != null &&
+                                l.PERSONALNAME.Contains(personalName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // 5. Lógica de Paginación
+            int totalRegistros = loansFiltrados.Count;
+            // Manejo de pageSize = -1 (Mostrar todos)
+            int actualPageSize = pageSize == -1 ? (totalRegistros > 0 ? totalRegistros : 1) : pageSize;
+
+            int totalPaginas = (int)Math.Ceiling((double)totalRegistros / actualPageSize);
+
+            var loansPaginados = loansFiltrados
+                .Skip((page - 1) * actualPageSize)
+                .Take(actualPageSize)
+                .ToList();
+
+            // 6. Llenar ViewBags para la vista
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.PaginaActual = page;
+            ViewBag.Top = pageSize; // Mantenemos el valor original (-1, 10, 20...)
+
+            // Estos ViewBags son necesarios si tu vista tiene filtros desplegables de tipos o libros
+            ViewBag.LoansTypes = await loansTypesBL.GetAllLoanTypesAsync();
+            ViewBag.ReservationStatus = await reservationStatusBL.GetAllReservationStatusAsync();
+
+            ViewData["personalName"] = personalName;
+
+            // Asegúrate de que la vista se llame LoansDeleted.cshtml
+            return View("LoansDelete",loansPaginados);
         }
     }
 }

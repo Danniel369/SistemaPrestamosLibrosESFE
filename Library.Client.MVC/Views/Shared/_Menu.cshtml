@@ -130,13 +130,17 @@
                 <span class="menu-title">Gestión General</span>
                 <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="submenu-docente">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Personal" asp-action="Index">Crear Personal</a>
-                    </li>
-                </ul>
-            </div>
+        </li>
+        <div class="collapse" id="submenu-docente">
+            <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Personal" asp-action="Index">Crear Personal</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="LoansTeacher" asp-action="LoansDelete">Préstamos Eliminados</a>
+                </li>
+            </ul>
+        </div>
         </li>
 
         <li class="nav-item">

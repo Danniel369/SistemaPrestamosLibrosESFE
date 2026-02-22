@@ -34,7 +34,6 @@ namespace Library.DataAccess.Domain
 
 
     }
-
     public class LoanDates2
     { 
         public long LOAN_DATE_ID { get; set; } 

@@ -368,7 +368,7 @@ namespace Library.Client.MVC.Controllers
             LoanDates loanDates = new LoanDates
             {
                 ID_LOAN = pLoans.LOAN_ID,
-                LOANSTEACHER_ID = pLoans.LOAN_ID,
+                ////LOANSTEACHER_ID = pLoans.LOAN_ID,
                 START_DATE = fechaInicio.Value,
                 END_DATE = fechaCierre.Value,
                 STATUS = 1
