@@ -25,7 +25,7 @@ namespace Library.Client.MVC.Controllers
 
         // 1. Mostrar la lista de Docentes con Paginación y Filtro
         // GET: /Docente/Index
-        public async Task<IActionResult> Index(Personal pPersonal = null, int page = 1, int pageSize = 10) // ⬅️ Usa modelo Docentes
+        public async Task<IActionResult> Index(Personal pPersonal = null, int page = 1, int pageSize = 5) // ⬅️ Usa modelo Docentes
         {
             if (pPersonal == null)
                 pPersonal = new Personal();

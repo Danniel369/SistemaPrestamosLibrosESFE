@@ -93,7 +93,7 @@
         <h1 style="padding:15px; font-family: 'Poppins', sans-serif; font-weight: 600; margin-left: -15px;">Préstamos Generales Eliminados</h1>
 
         <div class="d-flex flex-wrap form-busqueda mb-3">
-            <form asp-action="LoansDeleted" class="d-flex flex-wrap form-busqueda w-100" method="get">
+            <form asp-action="LoansDelete" class="d-flex flex-wrap form-busqueda w-100" method="get">
                 <div class="spacer">
                     <input type="text" placeholder="Nombre Personal" class="form-control" name="personalName" value="@ViewData["personalName"]" />
                 </div>
@@ -178,15 +178,15 @@
             <nav class="pagination-container">
                 @if (ViewBag.PaginaActual > 1)
                 {
-                    <a class="page-btn" asp-action="LoansDeleted" asp-route-page="@(ViewBag.PaginaActual - 1)" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">Anterior</a>
+                    <a class="page-btn" asp-action="LoansDelete" asp-route-page="@(ViewBag.PaginaActual - 1)" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">Anterior</a>
                 }
                 @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
                 {
-                    <a class="page-btn @(i == ViewBag.PaginaActual ? "active" : "")" asp-action="LoansDeleted" asp-route-page="@i" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">@i</a>
+                    <a class="page-btn @(i == ViewBag.PaginaActual ? "active" : "")" asp-action="LoansDelete" asp-route-page="@i" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">@i</a>
                 }
                 @if (ViewBag.PaginaActual < ViewBag.TotalPaginas)
                 {
-                    <a class="page-btn" asp-action="LoansDeleted" asp-route-page="@(ViewBag.PaginaActual + 1)" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">Siguiente</a>
+                    <a class="page-btn" asp-action="LoansDelete" asp-route-page="@(ViewBag.PaginaActual + 1)" asp-route-pageSize="@ViewBag.Top" asp-route-personalName="@ViewData["personalName"]">Siguiente</a>
                 }
             </nav>
         }
@@ -197,7 +197,7 @@
     document.getElementById('selectRedireccion').addEventListener('change', function() {
         const value = this.value;
         if (value === 'opcion1') window.location.href = '@Url.Action("Index", "LoansTeacher")';
-        else if (value === 'opcion2') window.location.href = '@Url.Action("LoansDeleted", "LoansTeacher")';
+        else if (value === 'opcion2') window.location.href = '@Url.Action("LoansDelete", "LoansTeacher")';
     });
 
     document.addEventListener("DOMContentLoaded", () => {

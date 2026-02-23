@@ -1,10 +1,11 @@
 ﻿@model IEnumerable<Library.DataAccess.Domain.Personal>
 @{
-    ViewData["Title"] = "Personal"; 
+    ViewData["Title"] = "Personal";
     int numPage = 1;
     int numRegistros = 0;
-    int numRegistrosPorPage = 10;
-    int[] tops = { 10, 20, 50, 100, 500, 1000, 10000, -1 };
+    int numRegistrosPorPage = 5; // Cambiado de 10 a 5
+    // Agregamos el 5 a la lista de opciones
+    int[] tops = { 5, 10, 20, 50, 100, 500, 1000, 10000, -1 };
     int topActual = Convert.ToInt32(ViewBag.Top);
 }
 

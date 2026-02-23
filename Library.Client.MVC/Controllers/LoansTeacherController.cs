@@ -202,9 +202,10 @@ namespace Library.Client.MVC.Controllers
                 headerRange.Style.Font.FontColor = XLColor.White;
                 headerRange.Style.Font.Bold = true;
 
-                // 3. Llenado de datos
+                // 3. Llenado de datos (Sin filtros restrictivos)
                 int row = 2;
-                foreach (var item in teacherList.Where(x => x.STATUS)) // Solo activos
+                // Quitamos el .Where(x => x.STATUS) para que tome TODOS los registros
+                foreach (var item in teacherList.OrderByDescending(x => x.LOANSTEACHER_ID))
                 {
                     worksheet.Cell(row, 1).Value = item.LOANSTEACHER_ID;
                     worksheet.Cell(row, 2).Value = item.LoanTypes?.TYPES_NAME ?? "N/A";
@@ -213,10 +214,18 @@ namespace Library.Client.MVC.Controllers
                     worksheet.Cell(row, 5).Value = item.PERSONALNAME ?? "No disponible";
                     worksheet.Cell(row, 6).Value = item.ROL ?? "No asignado";
                     worksheet.Cell(row, 7).Value = item.Books?.TITLE ?? "Sin título";
-                    worksheet.Cell(row, 8).Value = "ACTIVO";
+
+                    // Mostramos el estado real en la columna 8
+                    worksheet.Cell(row, 8).Value = item.STATUS ? "ACTIVO" : "ELIMINADO";
+
+                    // Opcional: Si está eliminado, podemos poner el texto en rojo para diferenciarlo
+                    if (!item.STATUS)
+                    {
+                        worksheet.Cell(row, 8).Style.Font.FontColor = XLColor.Red;
+                    }
+
                     row++;
                 }
-
                 // Ajuste automático de columnas
                 worksheet.Columns().AdjustToContents();
 
@@ -358,7 +367,7 @@ namespace Library.Client.MVC.Controllers
                 return View(pLoan);
             }
         }
-        public async Task<IActionResult> LoansDelete(string personalName = "", int page = 1, int pageSize =10)
+        public async Task<IActionResult> LoansDelete(string personalName = "", int page = 1, int pageSize =5)
         {
             // 1. Instanciamos el objeto para los includes
             var pLoans = new TeacherDomain();

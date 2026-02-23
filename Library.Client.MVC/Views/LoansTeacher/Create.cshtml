@@ -4,6 +4,8 @@
     ViewData["Title"] = "Crear Préstamo Docente";
     // Casteo de la lista de tipos de préstamo para el Select
     List<Library.DataAccess.Domain.LoanTypes> loanTypes = ViewBag.LoanTypes as List<Library.DataAccess.Domain.LoanTypes>;
+    int topActual = ViewBag.Top != null ? Convert.ToInt32(ViewBag.Top) : 5;
+
 }
 
 @* Iconos de Bootstrap *@
