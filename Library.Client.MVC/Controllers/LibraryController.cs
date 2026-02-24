@@ -57,14 +57,29 @@ namespace Library.Client.MVC.Controllers
         // GET: CategoriesController/Edit/5
         public async Task<IActionResult> CreateLoansSt(int id)
         {
+            // 1. Obtener el libro y validar si existe
             var books = await booksBL.GetBooksByIdAsync(new Books { BOOK_ID = id });
-            var reservations = new List<int> { 1, 3, 4 };
-            var cantidadPrestamos = reservations
-                .Select(async reservation => await loansBL.GetLoansAsync(new Loans { ID_BOOK = id, ID_RESERVATION = reservation, STATUS = true }))
-                .Select(task => task.Result.Count)
-                .Sum();
 
-            // Validación corregida:
+            if (books == null)
+            {
+                // Si el libro no existe, redirigimos o mostramos error 404
+                return NotFound();
+            }
+
+            // 2. Cálculo de préstamos (Optimizado)
+            var reservations = new List<int> { 1, 3, 4 };
+            int cantidadPrestamos = 0;
+
+            foreach (var resId in reservations)
+            {
+                var result = await loansBL.GetLoansAsync(new Loans { ID_BOOK = id, ID_RESERVATION = resId, STATUS = true });
+                if (result != null)
+                {
+                    cantidadPrestamos += result.Count;
+                }
+            }
+
+            // 3. Lógica de alertas
             if (books.EJEMPLARS <= 0)
             {
                 ViewBag.AlertaLibro2 = "No hay ejemplares disponibles para reservación";
@@ -78,16 +93,22 @@ namespace Library.Client.MVC.Controllers
                 ViewBag.AlertaLibro2 = "No hay suficientes ejemplares para realizar la reservacion";
             }
 
+            // 4. Carga de datos relacionados con validación de nulos
             ViewBag.LoanTypes = await loanTypesBL.GetAllLoanTypesAsync();
+
             var editorial = await editorialsBL.GetEditorialsByIdAsync(new Editorials { EDITORIAL_ID = books.ID_EDITORIAL });
             var categoria = await categoriesBL.GetCategoriesByIdAsync(new Categories { CATEGORY_ID = books.ID_CATEGORY });
             var authors = await authorsBL.GetAuthorsByIdAsync(new Authors { AUTHOR_ID = books.ID_AUTHOR });
-            ViewBag.Editorial = editorial.EDITORIAL_NAME;
-            ViewBag.Categoria = categoria.CATEGORY_NAME;
-            ViewBag.Autor = authors.AUTHOR_NAME;
+
+            // Usamos el operador condicional nulo (?) para evitar errores si las relaciones fallan
+            ViewBag.Editorial = editorial?.EDITORIAL_NAME ?? "N/A";
+            ViewBag.Categoria = categoria?.CATEGORY_NAME ?? "N/A";
+            ViewBag.Autor = authors?.AUTHOR_NAME ?? "N/A";
+
             ViewBag.Imagen = books.COVER;
             ViewBag.Titulo = books.TITLE;
             ViewBag.Year = books.YEAR;
+
             return View(books);
         }
 
