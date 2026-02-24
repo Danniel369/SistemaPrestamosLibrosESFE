@@ -37,11 +37,7 @@
                     <i class="bi bi-plus-circle"></i> Crear nuevo
                 </a>
             </div> 
-            <div class="spacer">
-                <button id="search-button" type="submit" class="btn btn-secondary">
-                    <i class="bi bi-reply-fill"></i> Buscar
-                </button>
-            </div>
+
             <div class="spacer">
                 <select name="ID_TYPE" class="form-control">
                     <option value="0">Tipo de Préstamo</option>
@@ -61,10 +57,20 @@
                     }
                 </select>
             </div>
-            <a asp-action="ExportarExcel" class="btn btn-success" style="background-color: #1E7940;">
-                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-            </a>
-           
+            <div class="spacer">
+                <button id="search-button" type="submit" class="btn btn-secondary">
+                    <i class="bi bi-reply-fill"></i> Buscar
+                </button>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-eraser-fill"></i> Limpiar
+                </a>
+                <a asp-action="ExportarExcel" class="btn btn-success" style="background-color: #1E7940;">
+                    <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+                </a>
+            </div>
+
         </form>
 
         <table class="table table-bordered">
