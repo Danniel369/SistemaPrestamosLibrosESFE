@@ -15,30 +15,35 @@ namespace Library.Client.MVC.Controllers
         BLCategories categoriesBL = new BLCategories();
         BLCatalogs catalogsBL = new BLCatalogs();
 
-        public async Task<IActionResult> Index(Editorials pEditorials = null, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> Index(Editorials pEditorials = null, int page = 1, int top_aux = 5)
         {
             if (pEditorials == null)
                 pEditorials = new Editorials();
-            if (pEditorials.Top_Aux == -1)
-                pEditorials.Top_Aux = 0;
-            else if (pEditorials.Top_Aux == 1)
-                pEditorials.Top_Aux = 0;
+
+            // Forzamos al BL a traer todos los registros para paginar nosotros en memoria
+            pEditorials.Top_Aux = -1;
 
             var allEditorials = await editorialsBL.GetEditorialsAsync(pEditorials);
+
+            // Ordenamiento
             allEditorials = allEditorials.OrderBy(e => e.EDITORIAL_ID).ToList();
 
-            // Aplicar paginación
+            // Lógica para manejar "Todos" (-1)
+            int actualPageSize = (top_aux == -1) ? (allEditorials.Count > 0 ? allEditorials.Count : 5) : top_aux;
+
+            // Calcular paginación
             int totalRegistros = allEditorials.Count();
-            int totalPaginas = totalRegistros > 0 ? (int)Math.Ceiling((double)totalRegistros / pageSize) : 1;
-            ViewBag.TotalPaginas = totalPaginas;
+            int totalPaginas = totalRegistros > 0 ? (int)Math.Ceiling((double)totalRegistros / actualPageSize) : 1;
+
             var editorials = allEditorials
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((page - 1) * actualPageSize)
+                .Take(actualPageSize)
                 .ToList();
 
+            // Pasar datos a la vista
             ViewBag.TotalPaginas = totalPaginas;
             ViewBag.PaginaActual = page;
-            ViewBag.Top = pageSize;
+            ViewBag.Top = top_aux; // Esto mantiene seleccionada la opción en el dropdown
             ViewBag.ShowMenu = true;
 
             return View(editorials);

@@ -1,8 +1,15 @@
 ﻿@model IEnumerable<Library.DataAccess.Domain.Books>
 @{
     ViewData["Title"] = "Index";
-    int[] tops = { 10, 20, 50, 100, 500, 1000, 10000, -1 };
-    int topActual = Convert.ToInt32(ViewBag.Top);
+    int topActual = ViewBag.Top != null ? Convert.ToInt32(ViewBag.Top) : 5;
+    List<int> listaTops = new List<int>();
+    // 1. De 5 en 5 hasta 100
+    for (int i = 5; i <= 100; i += 5)
+    {
+        listaTops.Add(i);
+    }
+    listaTops.Add(-1);
+    int[] tops = listaTops.ToArray();
     List<Library.DataAccess.Domain.Categories> categories = ViewBag.Categories as List<Library.DataAccess.Domain.Categories>;
     List<Library.DataAccess.Domain.AcquisitionTypes> acquisitionTypes = ViewBag.AcquisitionTypes as List<Library.DataAccess.Domain.AcquisitionTypes>;
     List<Library.DataAccess.Domain.Editorials> editorials = ViewBag.Editorials as List<Library.DataAccess.Domain.Editorials>;
@@ -200,12 +207,13 @@
                     </div>
                     <div class="spacer d-flex align-items-center">
                         <label class="control-label me-2">Top</label>
-                        <select name="top_aux" class="form-control">
+                        @* Cambio de name="top_aux" a "pageSize" para consistencia *@
+                        <select name="pageSize" class="form-control" onchange="this.form.submit()">
                             @foreach (var item in tops)
                             {
                                 string strItem = item != -1 ? item.ToString() : "Todos";
-                                string selected = item == topActual ? "selected" : "";
-                                <option value="@item" selected="@selected">@strItem</option>
+                                int val = item == -1 ? 10000 : item;
+                                <option value="@val" selected="@(topActual == val ? "selected" : null)">@strItem</option>
                             }
                         </select>
                     </div>

@@ -13,39 +13,42 @@ namespace Library.Client.MVC.Controllers
         BLCountries countriesBL = new BLCountries();
 
         // GET: AcquisitionTypesController
-        public async Task<IActionResult> Index(string COUNTRY_NAME, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> Index(string COUNTRY_NAME, int page = 1, int top_aux = 5)
         {
+            // 1. Filtro base para traer datos de la DB
             var filtro = new Countries
             {
                 COUNTRY_NAME = COUNTRY_NAME,
-                Top_Aux = -1 
+                Top_Aux = -1 // Traemos todo para paginar en memoria o filtrar
             };
 
             var allCountries = await countriesBL.GetCountriesAsync(filtro);
 
-            // Ordenar por COUNTRY_ID ascendente (o por nombre si quieres alfabéticamente)
-            allCountries = allCountries
-                .OrderBy(c => c.COUNTRY_ID) // o c.COUNTRY_NAME para orden alfabético
-                .ToList();
+            // 2. Ordenamiento
+            allCountries = allCountries.OrderBy(c => c.COUNTRY_ID).ToList();
 
-            int totalRegistros = allCountries.Count();
-            int totalPaginas = (int)Math.Ceiling((double)totalRegistros / pageSize);
+            // 3. Manejo de la lógica "Todos" (-1)
+            // Si top_aux es -1, el tamaño de la página es el total de registros
+            int actualPageSize = (top_aux == -1) ? allCountries.Count : top_aux;
+            if (actualPageSize <= 0) actualPageSize = 5; // Evitar división por cero si está vacío
 
+            int totalRegistros = allCountries.Count;
+            int totalPaginas = (int)Math.Ceiling((double)totalRegistros / actualPageSize);
+
+            // 4. Paginación con Skip y Take
             var countries = allCountries
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((page - 1) * actualPageSize)
+                .Take(actualPageSize)
                 .ToList();
 
-
+            // 5. Datos para la Vista
             ViewBag.TotalPaginas = totalPaginas;
             ViewBag.PaginaActual = page;
-            ViewBag.Top = pageSize;
+            ViewBag.Top = top_aux; // Mantenemos el valor original (5, 10, -1, etc.)
             ViewBag.ShowMenu = true;
 
             return View(countries);
         }
-
-
         // GET: AcquisitionTypesController/Details/5
         public async Task<ActionResult> Details(int id)
         {

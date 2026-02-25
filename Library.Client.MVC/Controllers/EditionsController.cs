@@ -12,30 +12,36 @@ namespace Library.Client.MVC.Controllers
     {
         BLEditions editionsBL = new BLEditions();
 
-        public async Task<IActionResult> Index(Editions pEditions = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(Editions pEditions = null, int page = 1, int top_aux = 5)
         {
             if (pEditions == null)
                 pEditions = new Editions();
-            if (pEditions.Top_Aux == -1)
-                pEditions.Top_Aux = 0;
-            else if (pEditions.Top_Aux == 1)
-                pEditions.Top_Aux = 0;
+
+            // Importante: Forzamos al BL a traer todo (-1) para paginar nosotros en memoria
+            pEditions.Top_Aux = -1;
 
             var allEditions = await editionsBL.GetEditionsAsync(pEditions);
+
+            // Ordenar por ID para que la paginación sea estable
             allEditions = allEditions.OrderBy(e => e.EDITION_ID).ToList();
 
-            // Aplicar paginación
+            // Manejar el tamaño de página para la opción "Todos" (-1)
+            int actualPageSize = (top_aux == -1) ? (allEditions.Count > 0 ? allEditions.Count : 5) : top_aux;
+
+            // Calcular metadatos de paginación
             int totalRegistros = allEditions.Count();
-            int totalPaginas = totalRegistros > 0 ? (int)Math.Ceiling((double)totalRegistros / pageSize) : 1;
-            ViewBag.TotalPaginas = totalPaginas;
+            int totalPaginas = totalRegistros > 0 ? (int)Math.Ceiling((double)totalRegistros / actualPageSize) : 1;
+
+            // Aplicar Skip y Take
             var editions = allEditions
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((page - 1) * actualPageSize)
+                .Take(actualPageSize)
                 .ToList();
 
+            // Enviar datos a la Vista
             ViewBag.TotalPaginas = totalPaginas;
             ViewBag.PaginaActual = page;
-            ViewBag.Top = pageSize;
+            ViewBag.Top = top_aux; // Mantiene seleccionada la opción correcta en el combo
             ViewBag.ShowMenu = true;
 
             return View(editions);

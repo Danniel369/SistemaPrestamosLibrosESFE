@@ -2,11 +2,22 @@
 
 @{
     ViewData["Title"] = "Editoriales";
+
+    // 1. Configuración dinámica del Top (5 en 5 hasta 100 + "Todos")
+    int topActual = ViewBag.Top != null ? Convert.ToInt32(ViewBag.Top) : 5;
+    List<int> listaTops = new List<int>();
+    for (int i = 5; i <= 100; i += 5)
+    {
+        listaTops.Add(i);
+    }
+    listaTops.Add(-1);
+    int[] tops = listaTops.ToArray();
+
+    // 2. Ajuste de variables de paginación
     int numPage = 1;
     int numRegistros = 0;
-    int numRegistrosPorPage = 10;
-    int[] tops = { 10, 20, 50, 100, 500, 1000, 10000, -1 };
-    int topActual = Convert.ToInt32(ViewBag.Top);
+    // Si es "Todos" (-1), mostramos todos los registros en una sola página
+    int numRegistrosPorPage = (topActual == -1) ? (Model.Any() ? Model.Count() : 1) : topActual;
 }
 
 <style>
